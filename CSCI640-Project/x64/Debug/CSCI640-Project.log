@@ -2,5 +2,5 @@
 C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(29,14): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
 C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(45,25): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(54,25): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(162,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(171,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   CSCI640-Project.vcxproj -> C:\Users\viset\source\repos\CSCI640-Project\x64\Debug\CSCI640-Project.exe

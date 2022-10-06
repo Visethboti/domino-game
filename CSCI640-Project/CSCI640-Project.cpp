@@ -76,8 +76,7 @@ class CDominoes{
 			int index = randomIndex[pieceIDCounter];
 			pieceIDCounter++;
 			data_domino mypiece = dominoPile[index];
-			cout << "[" << mypiece.left << "|" << mypiece.right << "]"
-				<< " available = " << mypiece.available << endl;
+			//cout << "[" << mypiece.left << "|" << mypiece.right << "]" << endl;
 			mypiece.available = false;
 			dominoPile[index] = mypiece;
 
@@ -154,8 +153,36 @@ class CPlayer {
 		CPlayer() {}  // constructor
 		~CPlayer() {} // destructor
 
+		void init(int id, CDominoes* newCDominoes) {
+			playerID = id;
+			cdominoes = newCDominoes;
+		}
+		
+		void getPiece(int numberOfPieces) {
+			data_domino piece;
+			for (int i = 0; i < numberOfPieces; i++) {
+				piece = cdominoes->getPiece();
+				playerDominoPieces.push_back(piece);
+				cout << "Player " << playerID << " picked [" << piece.left << "|" << piece.right << "]" << endl;
+			}
+		}
+
+		void displayPieces() {
+			int numOfPieces = playerDominoPieces.size();
+			cout << "Player " << playerID << " have " << numOfPieces << " pieces in hand :" << endl;
+			for (int i = 0; i < numOfPieces; i++) {
+				data_domino piece = playerDominoPieces.at(i);
+				cout << "[" << piece.left << "|" << piece.right << "] ";
+			}
+			cout << endl;
+		}
+
+		
+
 	private:
-		deque<data_domino> playerDominoPieces[2];
+		deque<data_domino> playerDominoPieces;
+		CDominoes* cdominoes;
+		int playerID;
 
 };
 
@@ -164,24 +191,28 @@ class CTable {
 		CTable() {}  // constructor
 		~CTable() {} // destructor
 
+		void initGame() {
+			cdominoes.init();
+			player1.init(1, &cdominoes);
+			player2.init(2, &cdominoes);
+
+			player1.getPiece(10);
+			player2.getPiece(10);
+			player1.displayPieces();
+			player2.displayPieces();
+			cdominoes.printDominoPile();
+		}
+
 	private:
 		deque<data_domino> tablePieces;
+		CPlayer player1;
+		CPlayer player2;
+		CDominoes cdominoes;
 };
 
 
 int main()
-{
-	srand(time(NULL));
-	CRandom* r = new CRandom();
-	
-	CDominoes* d = new CDominoes();
-	d->init();
-
-	d->getPiece();
-	d->getPiece();
-	d->getPiece();
-	d->getPiece();
-
-	d->printDominoPile();
-
+{	
+	CTable game;
+	game.initGame();
 }
