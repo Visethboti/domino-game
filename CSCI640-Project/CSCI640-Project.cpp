@@ -104,6 +104,10 @@ class CDominoes{
 			cout << "dominoPile stores " << totalPieces << " pieces. " << counter << " pieces are available." << endl;
 		}
 
+		int getTotalAvailablePiece() {
+			return (28 - pieceIDCounter + 1);
+		}
+
 	private:
 		data_domino dominoPile[28];
 		int randomIndex[28];
@@ -157,13 +161,18 @@ class CPlayer {
 			cdominoes = newCDominoes;
 		}
 		
-		void getPieceFromPile(int numberOfPieces) {
-			data_domino piece;
-			for (int i = 0; i < numberOfPieces; i++) {
-				piece = cdominoes->getPiece();
-				playerDominoPieces.push_back(piece);
-				cout << "Player " << playerID << " picked [" << piece.left << "|" << piece.right << "]" << endl;
+		bool getPieceFromPile(int numberOfPieces) {
+			if (cdominoes->getTotalAvailablePiece() >= numberOfPieces) {
+				data_domino piece;
+				for (int i = 0; i < numberOfPieces; i++) {
+					piece = cdominoes->getPiece();
+					playerDominoPieces.push_back(piece);
+					cout << "Player " << playerID << " picked [" << piece.left << "|" << piece.right << "]" << endl;
+				}
+				return true;
 			}
+			
+			return false;
 		}
 
 		void displayPieces() {
@@ -171,9 +180,17 @@ class CPlayer {
 			cout << "Player " << playerID << " have " << numOfPieces << " pieces in hand :" << endl;
 			for (int i = 0; i < numOfPieces; i++) {
 				data_domino piece = playerDominoPieces.at(i);
-				cout << "[" << piece.left << "|" << piece.right << "] ";
+				cout << i << "-[" << piece.left << "|" << piece.right << "] ";
 			}
 			cout << endl;
+		}
+
+		data_domino getPieceInHand(int pieceID) {
+			return playerDominoPieces.at(pieceID);
+		}
+
+		void removePieceInHand(int pieceID) {
+			playerDominoPieces.erase(playerDominoPieces.begin()+pieceID);
 		}
 
 		deque<data_domino> getPiecesInHand() {
@@ -184,10 +201,28 @@ class CPlayer {
 			return playerDominoPieces.size();
 		}
 
+		int getID() {
+			return playerID;
+		}
+		
+		int getHeaviestPieceFromHand() {
+			data_domino piece = playerDominoPieces.at(1);
+			int highest = piece.right + piece.left;
+			int resultIndex = 0;
+
+			for (int i = 1; i < playerDominoPieces.size(); i++) {
+				piece = playerDominoPieces.at(i);
+				if (highest < (piece.right + piece.left)) {
+					highest = piece.right + piece.left;
+					resultIndex = i;
+				}
+			}
+			return resultIndex;
+		}
+
 	private:
 		deque<data_domino> playerDominoPieces;
 		CDominoes* cdominoes;
-		//CTable* ctable;
 		int playerID;
 
 };
@@ -199,61 +234,129 @@ class CTable {
 
 		void initGame() {
 			cdominoes.init();
-			player1.init(1, &cdominoes);
-			player2.init(2, &cdominoes);
+			player[0].init(1, &cdominoes);
+			player[1].init(2, &cdominoes);
 
-			player1.getPieceFromPile(10);
-			player2.getPieceFromPile(10);
-			player1.displayPieces();
-			player2.displayPieces();
+			player[0].getPieceFromPile(10);
+			player[1].getPieceFromPile(10);
+			player[0].displayPieces();
+			player[1].displayPieces();
 			cdominoes.printDominoPile();
 
-			// startGame(){}
+			runGame();
+		}
+
+		void printTable() {
+			data_domino piece;
+			cout << "----------- Table -----------" << endl;
+			for (int i = 0; i < tablePieces.size(); i++) {
+				piece = tablePieces.at(i);
+				cout << "[" << piece.left << "|" << piece.right << "] ";
+			}
+			cout << endl;
 		}
 
 	private:
 		deque<data_domino> tablePieces;
-		CPlayer player1;
-		CPlayer player2;
+		CPlayer player[2];
 		CDominoes cdominoes;
 
 		void runGame() {
-			bool win = false;
+			bool win = false, playerDone = false;
 			int winnerID;
+			int currentPlayerIndex;
 			CPlayer* currentPlayer;
-			int playerTurnID;
+
+			data_domino piece;
 
 			// starting player
-			playerTurnID = 1;
+			currentPlayerIndex = 0;
+			currentPlayer = &player[currentPlayerIndex];
 			
+			// place first piece
+			// find the heaviest piece from the first player to place down	
+			int heaviestPieceIndex = currentPlayer->getHeaviestPieceFromHand();
+			// place piece
+			piece = player->getPieceInHand(heaviestPieceIndex);
+			player->removePieceInHand(heaviestPieceIndex);
+			placeFirstPiece(piece);
 
-			do{
-				// check for winner
-				if (player1.getNumPiecesInHand() == 0) {
-					win = true;
-					winnerID = 1;
-				}
-				else if (player2.getNumPiecesInHand() == 0) {
-					win = true;
-					winnerID = 2;
-				}
-
-				// for each player
-				currentPlayer
-				// check if can play
-				// 
-				// if can, play
-				// 
-				// if no, draw piece
-				// draw piece
-				// if cant draw piece, pass
-
+			do {
 				// switch player
-				
+				if (currentPlayerIndex == 0)
+					currentPlayerIndex = 1;
+				else
+					currentPlayerIndex = 0;
+				currentPlayer = &player[currentPlayerIndex];
+
+				do {
+					// check for winner
+					for (int i = 0; i < sizeof(player) / sizeof(CPlayer); i++) {
+						if (player[i].getNumPiecesInHand() == 0) {
+							win = true;
+							winnerID = i;
+							break; // exit of while loop
+						}
+					}
+
+					// check if can play
+					if (checkCanPlay(*currentPlayer)) { //// if can, play
+						// display the table
+						printTable();
+						bool done = false;
+						do {
+							// display all pieces
+							currentPlayer->displayPieces();
+							// ask player which piece
+							cout << "Player " << currentPlayer->getID() << " enter a number " << "(0-" << currentPlayer->getNumPiecesInHand() - 1 << ") to choose which piece to place: ";
+
+							int choice;
+							cin >> choice;
+							piece = currentPlayer->getPieceInHand(choice);
+							cout << "Enter head or tail (1 or 0) the piece:[" << piece.left << "|" << piece.right << "]: ";
+							int head;
+							cin >> head;
+
+							// place piece
+							if (placePiece(piece, head)) {
+								currentPlayer->removePieceInHand(choice);
+								done = true;
+							}
+							else { // fail
+								// nothing, just do again
+							}
+						} while (!done);
+						playerDone = true;
+					}
+					else { // if no, draw piece
+						// draw piece
+						if (currentPlayer->getPieceFromPile(1)) {
+							playerDone = false;
+						}
+						else { // if cant draw piece, pass
+							cout << "No piece available." << endl;
+							playerDone = true;
+						}
+					}
+				} while (!playerDone);
+				playerDone = false;
 			} while (!win);	
+		} 
+
+		bool checkCanPlay(CPlayer player) {
+			deque<data_domino> playerDominoPieces = player.getPiecesInHand();
+			int size = playerDominoPieces.size();
+			for (int i = 0; i < size; i++) {
+				data_domino piece = playerDominoPieces.at(i);
+				if (piece.right == tablePieces.front().left)
+					return true;
+				if (piece.left == tablePieces.back().right)
+					return true;
+			}
+			return false;
 		}
 
-		void placePiece(data_domino piece, bool head) { // head = true, tail  false
+		bool placePiece(data_domino piece, bool head) { // head = true, tail  false
 			string msg = "Valid move: piece placed.";
 			bool fail = false;
 
@@ -276,10 +379,12 @@ class CTable {
 				}
 			}
 
-			if (fail) {
-			}
-
 			cout << msg << endl;
+			return !fail;
+		}
+
+		void placeFirstPiece(data_domino piece) { // place first piece
+			tablePieces.push_front(piece);
 		}
 };
 
