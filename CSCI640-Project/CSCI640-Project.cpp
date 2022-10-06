@@ -1,10 +1,9 @@
-#include <iostream>
-#include <time.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#include <string>
 #include <iostream>
 #include <deque>
 
@@ -158,7 +157,7 @@ class CPlayer {
 			cdominoes = newCDominoes;
 		}
 		
-		void getPiece(int numberOfPieces) {
+		void getPieceFromPile(int numberOfPieces) {
 			data_domino piece;
 			for (int i = 0; i < numberOfPieces; i++) {
 				piece = cdominoes->getPiece();
@@ -177,11 +176,18 @@ class CPlayer {
 			cout << endl;
 		}
 
-		
+		deque<data_domino> getPiecesInHand() {
+			return playerDominoPieces;
+		}
+
+		int getNumPiecesInHand() {
+			return playerDominoPieces.size();
+		}
 
 	private:
 		deque<data_domino> playerDominoPieces;
 		CDominoes* cdominoes;
+		//CTable* ctable;
 		int playerID;
 
 };
@@ -196,11 +202,13 @@ class CTable {
 			player1.init(1, &cdominoes);
 			player2.init(2, &cdominoes);
 
-			player1.getPiece(10);
-			player2.getPiece(10);
+			player1.getPieceFromPile(10);
+			player2.getPieceFromPile(10);
 			player1.displayPieces();
 			player2.displayPieces();
 			cdominoes.printDominoPile();
+
+			// startGame(){}
 		}
 
 	private:
@@ -208,6 +216,71 @@ class CTable {
 		CPlayer player1;
 		CPlayer player2;
 		CDominoes cdominoes;
+
+		void runGame() {
+			bool win = false;
+			int winnerID;
+			CPlayer* currentPlayer;
+			int playerTurnID;
+
+			// starting player
+			playerTurnID = 1;
+			
+
+			do{
+				// check for winner
+				if (player1.getNumPiecesInHand() == 0) {
+					win = true;
+					winnerID = 1;
+				}
+				else if (player2.getNumPiecesInHand() == 0) {
+					win = true;
+					winnerID = 2;
+				}
+
+				// for each player
+				currentPlayer
+				// check if can play
+				// 
+				// if can, play
+				// 
+				// if no, draw piece
+				// draw piece
+				// if cant draw piece, pass
+
+				// switch player
+				
+			} while (!win);	
+		}
+
+		void placePiece(data_domino piece, bool head) { // head = true, tail  false
+			string msg = "Valid move: piece placed.";
+			bool fail = false;
+
+			// check
+			if (head) {
+				if (piece.right == tablePieces.front().left)
+					tablePieces.push_front(piece);
+				else {
+					msg = "Invalid move: cannot place at head.";
+					fail = true;
+				}
+
+			}
+			else {
+				if (piece.left == tablePieces.back().right)
+					tablePieces.push_back(piece);
+				else {
+					msg = "Invalid move: cannot place at tail.";
+					fail = true;
+				}
+			}
+
+			if (fail) {
+			}
+
+			cout << msg << endl;
+		}
 };
 
 
