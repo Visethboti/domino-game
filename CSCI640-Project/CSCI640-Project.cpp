@@ -182,11 +182,17 @@ class CPlayer {
 		void displayPieces() {
 			int numOfPieces = playerDominoPieces.size();
 			cout << "CPlayer: printing player hand: Player " << playerID << " have " << numOfPieces << " pieces in hand :" << endl;
-			for (int i = 0; i < numOfPieces; i++) {
-				data_domino piece = playerDominoPieces.at(i);
-				cout << i << "-[" << piece.left << "|" << piece.right << "] ";
+			if (numOfPieces == 0) {
+				cout << "...Hand is empty. There is no pieces left." << endl;
+				return;
 			}
-			cout << endl;
+			else {
+				for (int i = 0; i < numOfPieces; i++) {
+					data_domino piece = playerDominoPieces.at(i);
+					cout << i << "-[" << piece.left << "|" << piece.right << "] ";
+				}
+				cout << endl;
+			}
 		}
 
 		data_domino getPieceInHand(int pieceID) {
@@ -304,12 +310,13 @@ class CTable {
 
 		void printTable() {
 			data_domino piece;
-			cout << "----------- Table -----------" << endl;
+			cout << "-------------------- Table --------------------" << endl;
 			for (int i = 0; i < tablePieces.size(); i++) {
 				piece = tablePieces.at(i);
 				cout << "[" << piece.left << "|" << piece.right << "] ";
 			}
 			cout << endl;
+			cout << "-----------------------------------------------" << endl;
 		}
 
 	private:
@@ -457,15 +464,17 @@ class CTable {
 			// print each player hand
 			cout << "===== Result ======" << endl;
 			for (int i = 0; i < numberOfPlayers; i++) {
-				cout << "CTable: Player " << i << " pieces left: " << endl;
+				cout << "CTable: Player " << i+1 << " pieces left: " << endl;
 				player[i].displayPieces();
 			}
 
 			// Print Winner 
 			cout << "CTable: printing winner list" << endl;
+			cout << "===== Player ranking =====" << endl;
 			for (int i = 0; i < numberOfPlayers; i++) {
 				cout << i+1 << ". Player " << playerRanking[0][i] << " . Pieces left = " << playerRanking[1][i] << endl;
 			}
+			cout << "CTable: The Winner is Player " << playerRanking[0][0]  << "!" << endl;
 			cout << "CTable: End of the game. Exiting...";
 		} 
 
