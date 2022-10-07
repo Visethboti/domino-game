@@ -158,9 +158,10 @@ class CPlayer {
 		CPlayer() {}  // constructor
 		~CPlayer() {} // destructor
 
-		void init(int id, CDominoes* newCDominoes) {
+		void init(int id, CDominoes* newCDominoes, bool turnOnAI) {
 			playerID = id;
 			cdominoes = newCDominoes;
+			aiON = turnOnAI;
 		}
 		
 		bool getPieceFromPile(int numberOfPieces) {
@@ -225,11 +226,61 @@ class CPlayer {
 			return resultIndex;
 		}
 
+		bool getAIStatus() {
+			return aiON;
+		}
+
 	private:
 		deque<data_domino> playerDominoPieces;
 		CDominoes* cdominoes;
 		int playerID;
+		bool aiON;
 
+};
+
+class AIDominoPlayer {
+public:
+	AIDominoPlayer() {}  // constructor
+	~AIDominoPlayer() {} // destructor
+
+	int getChoice(deque<data_domino> currentTable, deque<data_domino> currentHand) {
+		deque<int> result = getPossibleChoiceIndex(currentTable, currentHand);
+
+		// select a choice by random
+		int randomChoice = crandom.getRandomPublic(0, (result.size() - 1));
+
+		return result[randomChoice];
+	}
+
+	int getChoiceHead() {
+		return crandom.getRandomPublic(0, 1);
+	}
+private:
+	CRandom crandom;
+
+	deque<int> getPossibleChoiceIndex(deque<data_domino> currentTable, deque<data_domino> currentHand) {
+		const int size = currentHand.size();
+		deque<int> result;
+		for (int i = 0; i < size; i++) {
+			if (checkCanPlayPiece(currentTable, currentHand.at(i))) {
+				result.push_back(i);
+			}
+		}
+		return result;
+	}
+
+	bool checkCanPlayPiece(deque<data_domino> currentTable, data_domino piece) { // check if a piece is able to be play in the current table
+		for (int i = 0; i < currentTable.size(); i++) {
+			data_domino tablePiece = currentTable.front();
+			if (piece.right == tablePiece.left || piece.left == tablePiece.left)
+				return true;
+			tablePiece = currentTable.back();
+			if (piece.right == tablePiece.right || piece.left == tablePiece.right)
+				return true;
+		}
+
+		return false;
+	}
 };
 
 class CTable {
@@ -239,8 +290,8 @@ class CTable {
 
 		void initGame() {
 			cdominoes.init();
-			player[0].init(1, &cdominoes);
-			player[1].init(2, &cdominoes);
+			player[0].init(1, &cdominoes, true);
+			player[1].init(2, &cdominoes, true);
 
 			player[0].getPieceFromPile(10);
 			player[1].getPieceFromPile(10);
@@ -266,8 +317,9 @@ class CTable {
 		CPlayer player[2];
 		CDominoes cdominoes;
 		CRandom crandom;
-		
 
+		AIDominoPlayer aiDominoPlayer;
+		
 		void runGame() {
 			bool win = false, playerDone = false;
 			int currentPlayerIndex;
@@ -308,26 +360,41 @@ class CTable {
 						bool done = false;
 						do {
 							int choice;
-							do {
-								// display all pieces
-								currentPlayer->displayPieces();
-								// ask player which piece
-								cout << "CTable: Player " << currentPlayer->getID() << " enter a number " << "(0-" << currentPlayer->getNumPiecesInHand() - 1 << ") to choose which piece to place: ";
-								
-								cin >> choice; // Ask for input choice of piece
-								if (choice < 0 || choice > currentPlayer->getNumPiecesInHand() - 1) {
-									cout << "CTable: Invalid choice. Input a valid piece number " << "(0-" << currentPlayer->getNumPiecesInHand() - 1 << ")." << endl;
-								}
-							} while (choice < 0 || choice > currentPlayer->getNumPiecesInHand() - 1);
-							
-							piece = currentPlayer->getPieceInHand(choice);
 							int head;
-							do {
+							// if ai is on
+							if (currentPlayer->getAIStatus()) {
+								currentPlayer->displayPieces();
+								cout << "CTable: Player " << currentPlayer->getID() << " enter a number " << "(0-" << currentPlayer->getNumPiecesInHand() - 1 << ") to choose which piece to place: ";
+								choice = aiDominoPlayer.getChoice(tablePieces, currentPlayer->getPiecesInHand());
+								cout << "AI picked " << choice << endl;
+								piece = currentPlayer->getPieceInHand(choice);
 								cout << "CTable: Enter 1 for head or 0 for tail (1/0) the piece:[" << piece.left << "|" << piece.right << "]: ";
-								cin >> head; // Ask for input choice of head or tail
-								if (head != 0 || head != 1) 
-									cout << "CTable: Invalid choice. Input 1 for head or 0 for tail." << endl;
-							} while (head != 0 || head != 1);
+								head = aiDominoPlayer.getChoiceHead();
+								cout << "AI picked " << head << endl;
+							}
+							else { // if ai is off, ask user for input
+								do {
+									// display all pieces
+									currentPlayer->displayPieces();
+									// ask player which piece
+									cout << "CTable: Player " << currentPlayer->getID() << " enter a number " << "(0-" << currentPlayer->getNumPiecesInHand() - 1 << ") to choose which piece to place: ";
+
+									cin >> choice; // Ask for input choice of piece
+									if (choice < 0 || choice > currentPlayer->getNumPiecesInHand() - 1) {
+										cout << "CTable: Invalid choice. Input a valid piece number " << "(0-" << currentPlayer->getNumPiecesInHand() - 1 << ")." << endl;
+									}
+								} while (choice < 0 || choice > currentPlayer->getNumPiecesInHand() - 1);
+
+								piece = currentPlayer->getPieceInHand(choice);
+								
+								do {
+									cout << "CTable: Enter 1 for head or 0 for tail (1/0) the piece:[" << piece.left << "|" << piece.right << "]: ";
+									cin >> head; // Ask for input choice of head or tail
+									if (head != 0 && head != 1)
+										cout << "CTable: Invalid choice. Input 1 for head or 0 for tail." << endl;
+								} while (head != 0 && head != 1);
+							}
+							
 
 							// place piece
 							if (placePiece(piece, head)) { // can place
@@ -374,7 +441,7 @@ class CTable {
 			// sort the ranking by player score (smallest to highest)
 			for (int i = 0; i < numberOfPlayers-1; i++) {
 				for (int j = i+1; j < numberOfPlayers; j++) {
-					if (playerRanking[1][i] < playerRanking[1][j]) {
+					if (playerRanking[1][i] > playerRanking[1][j]) {
 						// swape
 						int tempScore, tempID;
 						tempID = playerRanking[0][i];
@@ -387,10 +454,17 @@ class CTable {
 				}
 			}
 
+			// print each player hand
+			cout << "===== Result ======" << endl;
+			for (int i = 0; i < numberOfPlayers; i++) {
+				cout << "CTable: Player " << i << " pieces left: " << endl;
+				player[i].displayPieces();
+			}
+
 			// Print Winner 
 			cout << "CTable: printing winner list" << endl;
 			for (int i = 0; i < numberOfPlayers; i++) {
-				cout << "1. Player " << playerRanking[0][i] << " . Score = " << playerRanking[1][i];
+				cout << i+1 << ". Player " << playerRanking[0][i] << " . Pieces left = " << playerRanking[1][i] << endl;
 			}
 			cout << "CTable: End of the game. Exiting...";
 		} 
@@ -459,43 +533,7 @@ class CTable {
 		}
 };
 
-class AIDominoPlayer {
-	public:
-		int getChoice(deque<data_domino> currentTable, deque<data_domino> currentHand) {
-			deque<int> result = getPossibleChoiceIndex(currentTable, currentHand);
 
-			// select a choice by random
-			int randomChoice = crandom.getRandomPublic(0, (result.size()-1));
-
-			return randomChoice;
-		}
-	private:
-		CRandom crandom;
-
-		deque<int> getPossibleChoiceIndex(deque<data_domino> currentTable, deque<data_domino> currentHand) {
-			const int size = currentHand.size();
-			deque<int> result;
-			for (int i = 0; i < size; i++) {
-				if (checkCanPlayPiece(currentTable, currentHand.at(i))) {
-					result.push_back(i);
-				}
-			}
-			return result;
-		}
-
-		bool checkCanPlayPiece(deque<data_domino> currentTable, data_domino piece) { // check if a piece is able to be play in the current table
-			for (int i = 0; i < currentTable.size(); i++) {
-				data_domino tablePiece = currentTable.front();
-				if (piece.right == tablePiece.left || piece.left == tablePiece.left)
-					return true;
-				tablePiece = currentTable.back();
-				if (piece.right == tablePiece.right || piece.left == tablePiece.right)
-					return true;
-			}
-
-			return false;
-		}
-};
 
 int main()
 {	

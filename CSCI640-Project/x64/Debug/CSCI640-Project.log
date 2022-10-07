@@ -2,7 +2,10 @@
 C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(28,14): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
 C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(44,25): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(53,25): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(182,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(204,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(400,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(183,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(250,1): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(262,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(262,1): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
+C:\Users\viset\source\repos\CSCI640-Project\CSCI640-Project\CSCI640-Project.cpp(474,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   CSCI640-Project.vcxproj -> C:\Users\viset\source\repos\CSCI640-Project\x64\Debug\CSCI640-Project.exe
