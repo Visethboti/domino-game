@@ -348,9 +348,11 @@ class CTable {
 			int size = playerDominoPieces.size();
 			for (int i = 0; i < size; i++) {
 				data_domino piece = playerDominoPieces.at(i);
-				if (piece.right == tablePieces.front().left)
+				data_domino tablePiece = tablePieces.front();
+				if (piece.right == tablePiece.left || piece.right == tablePiece.right)
 					return true;
-				if (piece.left == tablePieces.back().right)
+				tablePiece = tablePieces.back();
+				if (piece.left == tablePiece.left || piece.left == tablePiece.right)
 					return true;
 			}
 			return false;
@@ -359,22 +361,37 @@ class CTable {
 		bool placePiece(data_domino piece, bool head) { // head = true, tail  false
 			string msg = "Valid move: piece placed.";
 			bool fail = false;
-
+			data_domino tablePiece;
 			// check
-			if (head) {
-				if (piece.right == tablePieces.front().left)
+			if (head) { // if head
+				tablePiece = tablePieces.front();
+				if (piece.right == tablePiece.left){
 					tablePieces.push_front(piece);
+				}
+				else if (piece.left == tablePiece.left) {
+					int temp = piece.left;
+					piece.left = piece.right;
+					piece.right = temp;
+					tablePieces.push_front(piece);
+				}
 				else {
-					msg = "Invalid move: cannot place at head.";
+					msg = "CTable: Invalid move: cannot place at head.";
 					fail = true;
 				}
-
 			}
-			else {
-				if (piece.left == tablePieces.back().right)
+			else { // if tail
+				tablePiece = tablePieces.back();
+				if (piece.left == tablePiece.right) {
 					tablePieces.push_back(piece);
+				}
+				else if (piece.right == tablePiece.right) {
+					int temp = piece.left;
+					piece.left = piece.right;
+					piece.right = temp;
+					tablePieces.push_front(piece);
+				}
 				else {
-					msg = "Invalid move: cannot place at tail.";
+					msg = "CTable: Invalid move: cannot place at tail.";
 					fail = true;
 				}
 			}
