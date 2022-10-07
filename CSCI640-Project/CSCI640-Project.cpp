@@ -462,19 +462,25 @@ class CTable {
 class AIDominoPlayer {
 	public:
 		int getChoice(deque<data_domino> currentTable, deque<data_domino> currentHand) {
-			
+			deque<int> result = getPossibleChoiceIndex(currentTable, currentHand);
+
+			// select a choice by random
+			int randomChoice = crandom.getRandomPublic(0, (result.size()-1));
+
+			return randomChoice;
 		}
 	private:
 		CRandom crandom;
 
-		deque<int> getPossibleChoice(deque<data_domino> currentTable, deque<data_domino> currentHand) {
+		deque<int> getPossibleChoiceIndex(deque<data_domino> currentTable, deque<data_domino> currentHand) {
 			const int size = currentHand.size();
 			deque<int> result;
 			for (int i = 0; i < size; i++) {
 				if (checkCanPlayPiece(currentTable, currentHand.at(i))) {
-					// rest
+					result.push_back(i);
 				}
 			}
+			return result;
 		}
 
 		bool checkCanPlayPiece(deque<data_domino> currentTable, data_domino piece) { // check if a piece is able to be play in the current table
