@@ -22,7 +22,7 @@ class CRandom {
 		    return myRand_scaled;
 		}
 
-		void shuffle(int array[], int size)
+		void shuffle(int array[], int size)//shuffle 
 		{
 			// Initialize seed randomly
 			srand(time(0));
@@ -75,7 +75,7 @@ class CDominoes{
 			int index = randomIndex[pieceIDCounter];
 			pieceIDCounter++;
 			data_domino mypiece = dominoPile[index];
-			//cout << "[" << mypiece.left << "|" << mypiece.right << "]" << endl;
+			cout << "CDomino: getting piece from domino pile. Piece got: [" << mypiece.left << "|" << mypiece.right << "]" << endl;
 			mypiece.available = false;
 			dominoPile[index] = mypiece;
 
@@ -85,6 +85,7 @@ class CDominoes{
 		void printDominoPile() {
 			data_domino mypiece;
 			int counter = 0;
+			cout << "CDomino: printing domino pile:" << endl;
 			for (int right = 0; right < 7; right++) {
 				for (int left = right; left < 7; left++) {
 					mypiece = dominoPile[counter];
@@ -117,6 +118,7 @@ class CDominoes{
 		void set_availability_onCreate() {
 			data_domino mypiece;
 			int counter = 0;
+			cout << "CDomino: generating domino pieces." << endl;
 			for (int right = 0; right < 7; right++) {
 
 				for (int left = right; left < 7; left++) {
@@ -142,7 +144,7 @@ class CDominoes{
 			cout << "dominoPile stores " << totalPieces << " pieces. " << counter << " pieces are available." << endl;
 		}
 
-		void initShuffleIndex() {
+		void initShuffleIndex() { //shuffle domino pieces index
 			for (int i = 0; i < 28; i++) {
 				randomIndex[i] = i;
 			}
@@ -162,12 +164,13 @@ class CPlayer {
 		}
 		
 		bool getPieceFromPile(int numberOfPieces) {
+			cout << "CPlayer: Player " << playerID << " getting piece from domino pile." << endl;
 			if (cdominoes->getTotalAvailablePiece() >= numberOfPieces) {
 				data_domino piece;
 				for (int i = 0; i < numberOfPieces; i++) {
 					piece = cdominoes->getPiece();
 					playerDominoPieces.push_back(piece);
-					cout << "Player " << playerID << " picked [" << piece.left << "|" << piece.right << "]" << endl;
+					cout << "CPlayer: Player " << playerID << " got [" << piece.left << "|" << piece.right << "] added to hand." << endl;
 				}
 				return true;
 			}
@@ -177,7 +180,7 @@ class CPlayer {
 
 		void displayPieces() {
 			int numOfPieces = playerDominoPieces.size();
-			cout << "Player " << playerID << " have " << numOfPieces << " pieces in hand :" << endl;
+			cout << "CPlayer: printing player hand: Player " << playerID << " have " << numOfPieces << " pieces in hand :" << endl;
 			for (int i = 0; i < numOfPieces; i++) {
 				data_domino piece = playerDominoPieces.at(i);
 				cout << i << "-[" << piece.left << "|" << piece.right << "] ";
@@ -206,9 +209,11 @@ class CPlayer {
 		}
 		
 		int getHeaviestPieceFromHand() {
-			data_domino piece = playerDominoPieces.at(1);
-			int highest = piece.right + piece.left;
 			int resultIndex = 0;
+			data_domino piece = playerDominoPieces.at(resultIndex);
+			int highest = piece.right + piece.left;
+			
+			cout << "CPlayer: Player " << playerID << " get heaviest piece from hand. " << endl;
 
 			for (int i = 1; i < playerDominoPieces.size(); i++) {
 				piece = playerDominoPieces.at(i);
@@ -260,70 +265,78 @@ class CTable {
 		deque<data_domino> tablePieces;
 		CPlayer player[2];
 		CDominoes cdominoes;
+		CRandom crandom;
+		
 
 		void runGame() {
 			bool win = false, playerDone = false;
-			int winnerID;
 			int currentPlayerIndex;
 			CPlayer* currentPlayer;
+			const int numberOfPlayers = sizeof(player) / sizeof(CPlayer);
 
 			data_domino piece;
 
-			// starting player
-			currentPlayerIndex = 0;
+			// random which player to go first
+			currentPlayerIndex = crandom.getRandomPublic(0, (numberOfPlayers-1)); // random player index to be first
 			currentPlayer = &player[currentPlayerIndex];
+			cout << "CTable: random player: Player " << currentPlayer->getID() << " goes first." << endl;
 			
 			// place first piece
 			// find the heaviest piece from the first player to place down	
 			int heaviestPieceIndex = currentPlayer->getHeaviestPieceFromHand();
 			// place piece
-			piece = player->getPieceInHand(heaviestPieceIndex);
-			player->removePieceInHand(heaviestPieceIndex);
-			placeFirstPiece(piece);
+			piece = currentPlayer->getPieceInHand(heaviestPieceIndex); // get piece from player hand
+			currentPlayer->removePieceInHand(heaviestPieceIndex); // remove piece from player hand
+			placeFirstPiece(piece); // place piece to the table
+			cout << "CTable: Player " << currentPlayer->getID() << " play the heaviest piece: [" << piece.left << "|" << piece.right << "] " << endl;
 
 			do {
 				// switch player
-				if (currentPlayerIndex == 0)
+				if (currentPlayerIndex == 0) {
 					currentPlayerIndex = 1;
+				}
 				else
 					currentPlayerIndex = 0;
 				currentPlayer = &player[currentPlayerIndex];
+				cout << "CTable: next player turn. Current player is Player " << currentPlayer->getID() << endl;
 
 				do {
-					// check for winner
-					for (int i = 0; i < sizeof(player) / sizeof(CPlayer); i++) {
-						if (player[i].getNumPiecesInHand() == 0) {
-							win = true;
-							winnerID = i;
-							break; // exit of while loop
-						}
-					}
-
 					// check if can play
 					if (checkCanPlay(*currentPlayer)) { //// if can, play
 						// display the table
 						printTable();
 						bool done = false;
 						do {
-							// display all pieces
-							currentPlayer->displayPieces();
-							// ask player which piece
-							cout << "Player " << currentPlayer->getID() << " enter a number " << "(0-" << currentPlayer->getNumPiecesInHand() - 1 << ") to choose which piece to place: ";
-
 							int choice;
-							cin >> choice;
+							do {
+								// display all pieces
+								currentPlayer->displayPieces();
+								// ask player which piece
+								cout << "CTable: Player " << currentPlayer->getID() << " enter a number " << "(0-" << currentPlayer->getNumPiecesInHand() - 1 << ") to choose which piece to place: ";
+								
+								cin >> choice; // Ask for input choice of piece
+								if (choice < 0 || choice > currentPlayer->getNumPiecesInHand() - 1) {
+									cout << "CTable: Invalid choice. Input a valid piece number " << "(0-" << currentPlayer->getNumPiecesInHand() - 1 << ")." << endl;
+								}
+							} while (choice < 0 || choice > currentPlayer->getNumPiecesInHand() - 1);
+							
 							piece = currentPlayer->getPieceInHand(choice);
-							cout << "Enter head or tail (1 or 0) the piece:[" << piece.left << "|" << piece.right << "]: ";
 							int head;
-							cin >> head;
+							do {
+								cout << "CTable: Enter 1 for head or 0 for tail (1/0) the piece:[" << piece.left << "|" << piece.right << "]: ";
+								cin >> head; // Ask for input choice of head or tail
+								if (head != 0 || head != 1) 
+									cout << "CTable: Invalid choice. Input 1 for head or 0 for tail." << endl;
+							} while (head != 0 || head != 1);
 
 							// place piece
-							if (placePiece(piece, head)) {
-								currentPlayer->removePieceInHand(choice);
+							if (placePiece(piece, head)) { // can place
+								cout << "CTable: Player " << currentPlayer->getID() << " play the piece:[" << piece.left << "|" << piece.right << "]" << endl;
+								currentPlayer->removePieceInHand(choice); // remove piece from player hand.
 								done = true;
 							}
 							else { // fail
-								// nothing, just do again
+								// nothing, ask player to enter a valid move
 							}
 						} while (!done);
 						playerDone = true;
@@ -331,16 +344,55 @@ class CTable {
 					else { // if no, draw piece
 						// draw piece
 						if (currentPlayer->getPieceFromPile(1)) {
+							cout << "CTable: Player " << currentPlayer->getID() << " could not play. Drawed a piece from domino pile." << endl;
 							playerDone = false;
 						}
 						else { // if cant draw piece, pass
-							cout << "No piece available." << endl;
+							cout << "CTable: No piece available." << endl;
 							playerDone = true;
 						}
 					}
 				} while (!playerDone);
 				playerDone = false;
+
+				// check for winner
+				// check if any player can play
+				win = true;
+				for (int i = 0; i < numberOfPlayers; i++) {
+					if (checkCanPlay(player[i])) {
+						win = false; // stay in the loop
+					}
+				}
 			} while (!win);	
+
+			// calculate winner
+			int playerRanking[2][numberOfPlayers]; // [0] is PlayerID, [1] is score
+			for (int i = 0; i < numberOfPlayers; i++) {
+				playerRanking[1][i] = player[i].getNumPiecesInHand();
+				playerRanking[0][i] = player[i].getID();
+			}
+			// sort the ranking by player score (smallest to highest)
+			for (int i = 0; i < numberOfPlayers-1; i++) {
+				for (int j = i+1; j < numberOfPlayers; j++) {
+					if (playerRanking[1][i] < playerRanking[1][j]) {
+						// swape
+						int tempScore, tempID;
+						tempID = playerRanking[0][i];
+						tempScore = playerRanking[1][i];
+						playerRanking[0][i] = playerRanking[0][j];
+						playerRanking[1][i] = playerRanking[1][j];
+						playerRanking[0][j] = tempID;
+						playerRanking[1][j] = tempScore;
+					}
+				}
+			}
+
+			// Print Winner 
+			cout << "CTable: printing winner list" << endl;
+			for (int i = 0; i < numberOfPlayers; i++) {
+				cout << "1. Player " << playerRanking[0][i] << " . Score = " << playerRanking[1][i];
+			}
+			cout << "CTable: End of the game. Exiting...";
 		} 
 
 		bool checkCanPlay(CPlayer player) {
@@ -349,17 +401,19 @@ class CTable {
 			for (int i = 0; i < size; i++) {
 				data_domino piece = playerDominoPieces.at(i);
 				data_domino tablePiece = tablePieces.front();
-				if (piece.right == tablePiece.left || piece.right == tablePiece.right)
+				if (piece.right == tablePiece.left || piece.left == tablePiece.left)
 					return true;
 				tablePiece = tablePieces.back();
-				if (piece.left == tablePiece.left || piece.left == tablePiece.right)
+				if (piece.left == tablePiece.right || piece.left == tablePiece.right)
 					return true;
 			}
 			return false;
 		}
 
+		
+
 		bool placePiece(data_domino piece, bool head) { // head = true, tail  false
-			string msg = "Valid move: piece placed.";
+			string msg = "CTable: Valid move.";
 			bool fail = false;
 			data_domino tablePiece;
 			// check
@@ -388,7 +442,7 @@ class CTable {
 					int temp = piece.left;
 					piece.left = piece.right;
 					piece.right = temp;
-					tablePieces.push_front(piece);
+					tablePieces.push_back(piece);
 				}
 				else {
 					msg = "CTable: Invalid move: cannot place at tail.";
@@ -405,6 +459,26 @@ class CTable {
 		}
 };
 
+class AIDominoPlayer {
+	public:
+		int getChoice(deque<data_domino> currentTable, deque<data_domino> currentHand) {
+			
+		}
+	private:
+		deque<int> getPossibleChoice(deque<data_domino> currentHand) {
+			const int size = currentHand.size();
+			deque<int> result;
+			for (int i = 0; i < size; i++) {
+				if (checkCanPlayPiece(currentHand.at(i))) {
+					//result[]
+				}
+			}
+		}
+
+		bool checkCanPlayPiece(data_domino piece) {
+
+		}
+};
 
 int main()
 {	
