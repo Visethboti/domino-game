@@ -404,7 +404,7 @@ class CTable {
 				if (piece.right == tablePiece.left || piece.left == tablePiece.left)
 					return true;
 				tablePiece = tablePieces.back();
-				if (piece.left == tablePiece.right || piece.left == tablePiece.right)
+				if (piece.right == tablePiece.right || piece.left == tablePiece.right)
 					return true;
 			}
 			return false;
@@ -465,18 +465,29 @@ class AIDominoPlayer {
 			
 		}
 	private:
-		deque<int> getPossibleChoice(deque<data_domino> currentHand) {
+		CRandom crandom;
+
+		deque<int> getPossibleChoice(deque<data_domino> currentTable, deque<data_domino> currentHand) {
 			const int size = currentHand.size();
 			deque<int> result;
 			for (int i = 0; i < size; i++) {
-				if (checkCanPlayPiece(currentHand.at(i))) {
-					//result[]
+				if (checkCanPlayPiece(currentTable, currentHand.at(i))) {
+					// rest
 				}
 			}
 		}
 
-		bool checkCanPlayPiece(data_domino piece) {
+		bool checkCanPlayPiece(deque<data_domino> currentTable, data_domino piece) { // check if a piece is able to be play in the current table
+			for (int i = 0; i < currentTable.size(); i++) {
+				data_domino tablePiece = currentTable.front();
+				if (piece.right == tablePiece.left || piece.left == tablePiece.left)
+					return true;
+				tablePiece = currentTable.back();
+				if (piece.right == tablePiece.right || piece.left == tablePiece.right)
+					return true;
+			}
 
+			return false;
 		}
 };
 
